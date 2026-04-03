@@ -1,4 +1,4 @@
-![Visitas](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgit5loxosec%2Fdeus-ex-machina&count_bg=%2300FF00&title_bg=%23222222&icon=&icon_color=%23E7E7E7&title=VISITAS&edge_flat=true)
+[![Visitas](https://hits.dwyl.com/git5loxosec/deus-ex-machina.svg)](https://hits.dwyl.com/git5loxosec/deus-ex-machina)
 # ⚡ Deus Ex Machina v1.0.0
 ![ss](Screenshot_20260403_091448_Termux.jpg)
 
