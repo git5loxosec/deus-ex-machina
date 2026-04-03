@@ -1,8 +1,9 @@
 #!/bin/bash
+
 G='\033[0;32m'; R='\033[0;31m'; Y='\033[1;33m'; C='\033[0;36m'; NC='\033[0m'
 
 if [ -z "${GEMINI_API_KEY}" ]; then
-    echo -e "${R}Error: GEMINI_API_KEY not set${NC}"
+    echo -e "${R}Error: GEMINI_API_KEY no configurada${NC}"
     return 1 2>/dev/null || exit 1
 fi
 
@@ -16,11 +17,10 @@ _deus_engine() {
     local tmp_resp=$(mktemp)
     local tmp_cmd=$(mktemp)
 
-    # Nota: El instalador se encargará de que esto use el venv
     python3 -c "
 import json, sys, os
-sys_msg = f'ROLE: Autonomous Bash Agent (Deus Ex Machina). DIR: {os.getcwd()}. FILES: {os.popen(\"ls -la | head -n 20\").read()}. RULES: 1. ONLY bash code. 2. NO talk. 3. NO sudo. 4. Use cat/sed for files. 5. Multiple lines allowed.'
-payload = {'contents': [{'parts': [{'text': f'{sys_msg}\n\nTASK: {sys.argv[1]}'}]}]}
+sys_msg = f'ROL: Agente Bash Autónomo (Deus Ex Machina). DIR: {os.getcwd()}. ARCHIVOS: {os.popen(\"ls -la | head -n 20\").read()}. REGLAS: 1. SOLO código bash. 2. SIN explicaciones. 3. SIN sudo. 4. Usar cat/sed para archivos. 5. Múltiples líneas permitidas.'
+payload = {'contents': [{'parts': [{'text': f'{sys_msg}\n\nTAREA: {sys.argv[1]}'}]}]}
 print(json.dumps(payload))
 " "$req" > "$tmp_payload"
 
@@ -48,17 +48,17 @@ except: pass
             echo -e "${G}>>>${NC} ${Y}$cmd_content${NC}"
             source "$tmp_cmd"
         else
-            echo -e "${C}--- Deus Ex Script ---${NC}"
+            echo -e "${C}--- Script Deus Ex ---${NC}"
             while IFS= read -r line; do echo -e "${Y}$line${NC}"; done < "$tmp_cmd"
             echo -e "${C}-----------------------${NC}"
-            echo -ne "${G}Exe? [S/n]: ${NC}"
+            echo -ne "${G}¿Ejecutar? [S/n]: ${NC}"
             read -r opt < /dev/tty
             if [[ "$opt" =~ ^[sSyY]$ ]] || [ -z "$opt" ]; then
                 source "$tmp_cmd"
             fi
         fi
     else
-        echo -e "${R}Error: Null output or API failure.${NC}"
+        echo -e "${R}Error: Salida nula o fallo en la API.${NC}"
     fi
     rm -f "$tmp_payload" "$tmp_resp" "$tmp_cmd"
 }
