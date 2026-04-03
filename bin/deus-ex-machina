@@ -1,0 +1,78 @@
+#!/bin/bash
+G='\033[0;32m'; R='\033[0;31m'; Y='\033[1;33m'; C='\033[0;36m'; NC='\033[0m'
+
+if [ -z "${GEMINI_API_KEY}" ]; then
+    echo -e "${R}Error: GEMINI_API_KEY not set${NC}"
+    return 1 2>/dev/null || exit 1
+fi
+
+_deus_engine() {
+    local req="$1"
+    local MODEL="models/gemini-2.5-flash-lite"
+    [ -z "$req" ] && return
+    echo -ne "${Y}...${NC}\r"
+
+    local tmp_payload=$(mktemp)
+    local tmp_resp=$(mktemp)
+    local tmp_cmd=$(mktemp)
+
+    # Nota: El instalador se encargará de que esto use el venv
+    python3 -c "
+import json, sys, os
+sys_msg = f'ROLE: Autonomous Bash Agent (Deus Ex Machina). DIR: {os.getcwd()}. FILES: {os.popen(\"ls -la | head -n 20\").read()}. RULES: 1. ONLY bash code. 2. NO talk. 3. NO sudo. 4. Use cat/sed for files. 5. Multiple lines allowed.'
+payload = {'contents': [{'parts': [{'text': f'{sys_msg}\n\nTASK: {sys.argv[1]}'}]}]}
+print(json.dumps(payload))
+" "$req" > "$tmp_payload"
+
+    curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateContent?key=${GEMINI_API_KEY}" \
+        -H 'Content-Type: application/json' -d @"$tmp_payload" > "$tmp_resp"
+
+    python3 -c "
+import sys, json, re
+try:
+    with open('$tmp_resp', 'r') as f: data = json.load(f)
+    text = data['candidates'][0]['content']['parts'][0]['text']
+    blocks = re.findall(r'(\`{3}(?:bash|sh)?\n)(.*?)(\n\`{3})', text, re.DOTALL | re.IGNORECASE)
+    code = '\n'.join([b[1] for b in blocks]) if blocks else text
+    for tag in ['\`\`\`bash', '\`\`\`sh', '\`\`\`']: code = code.replace(tag, '')
+    clean_code = code.strip().replace('\`', '').replace('sudo ', '')
+    print(clean_code)
+except: pass
+" > "$tmp_cmd"
+
+    echo -ne "\r\033[K"
+
+    if [ -s "$tmp_cmd" ]; then
+        local cmd_content=$(cat "$tmp_cmd")
+        if [[ "$cmd_content" =~ ^(ls|cd|pwd|cat|clear|echo)([[:space:]]|$) ]] && [[ ! "$cmd_content" =~ (\>|\>\>|rm|touch|chmod|chown|mv|cp|python|bash|sh|curl|wget) ]]; then
+            echo -e "${G}>>>${NC} ${Y}$cmd_content${NC}"
+            source "$tmp_cmd"
+        else
+            echo -e "${C}--- Deus Ex Script ---${NC}"
+            while IFS= read -r line; do echo -e "${Y}$line${NC}"; done < "$tmp_cmd"
+            echo -e "${C}-----------------------${NC}"
+            echo -ne "${G}Exe? [S/n]: ${NC}"
+            read -r opt < /dev/tty
+            if [[ "$opt" =~ ^[sSyY]$ ]] || [ -z "$opt" ]; then
+                source "$tmp_cmd"
+            fi
+        fi
+    else
+        echo -e "${R}Error: Null output or API failure.${NC}"
+    fi
+    rm -f "$tmp_payload" "$tmp_resp" "$tmp_cmd"
+}
+
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+    if [[ "$1" == "INTERACTIVE_MODE" ]]; then
+        echo -e "${C}⚡ DEUS EX MACHINA v1.0.0 | $(pwd)${NC}"
+        while true; do
+            echo -ne "\n${G}deus_ex>${NC} "; read -r input
+            [[ "$input" =~ ^(exit|salir|clear)$ ]] && { [[ "$input" == "clear" ]] && clear || break; continue; }
+            [ -z "$input" ] && continue
+            _deus_engine "$input"
+        done
+    elif [[ -n "$*" ]]; then
+        _deus_engine "$*"
+    fi
+fi
