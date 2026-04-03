@@ -1,4 +1,5 @@
 # ⚡ Deus Ex Machina v1.0.0
+![ss](Screenshot_20260403_091448_Termux.jpg)
 
 **Deus Ex Machina** es un wrapper autónomo para la terminal de Linux diseñado para la ejecución inteligente de tareas mediante lenguaje natural. Actúa como un agente de Bash capaz de interpretar comandos, analizar el sistema de archivos y ejecutar scripts complejos sin intervención manual constante.
 
