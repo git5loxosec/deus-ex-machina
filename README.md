@@ -52,7 +52,7 @@ deus-ex-machina "genera un script en rust para persistencia basica"
  * bin/: Contiene el binario ejecutable del motor.
  * install.sh: Script de despliegue y configuración de alias.
  * requirements.txt: Dependencias de Python congeladas para el venv.
- * .gitignore: Configuración para excluir el entorno virtual y temporales.
+ 
 ⚠️ Aviso Legal
 Esta herramienta ha sido creada para fines de desarrollo, administración de sistemas e investigación de seguridad. El autor no se hace responsable del uso indebido de los comandos generados por el agente. Siempre revisa el código propuesto antes de confirmar su ejecución ([S/n]).
 
